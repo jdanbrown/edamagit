@@ -9,8 +9,13 @@ import { BranchListingView } from '../views/branches/branchListingView';
 import { RemoteBranchListingView } from '../views/remotes/remoteBranchListingView';
 import { TagListingView } from '../views/tags/tagListingView';
 import MagitUtils from '../utils/magitUtils';
+import { transientConfig } from '../extension';
 
 export async function magitApplyEntityAtPoint(repository: MagitRepository, currentView: DocumentView): Promise<any> {
+  if (transientConfig.ignoreWhitespaceInDiff) {
+    window.showInformationMessage("Can't apply when ignore-whitespace-in-diff is enabled");
+    return;
+  }
 
   const selectedView = currentView.click(window.activeTextEditor!.selection.active);
 

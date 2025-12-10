@@ -8,8 +8,13 @@ import { RemoteBranchListingView } from '../views/remotes/remoteBranchListingVie
 import { TagListingView } from '../views/tags/tagListingView';
 import * as Reverting from './revertingCommands';
 import MagitUtils from '../utils/magitUtils';
+import { transientConfig } from '../extension';
 
 export async function reverseAtPoint(repository: MagitRepository, currentView: DocumentView): Promise<any> {
+  if (transientConfig.ignoreWhitespaceInDiff) {
+    window.showInformationMessage("Can't reverse when ignore-whitespace-in-diff is enabled");
+    return;
+  }
 
   const selectedView = currentView.click(window.activeTextEditor!.selection.active);
 

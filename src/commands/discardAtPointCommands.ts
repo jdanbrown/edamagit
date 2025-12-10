@@ -19,9 +19,14 @@ import * as Constants from '../common/constants';
 import ViewUtils from '../utils/viewUtils';
 import { View } from '../views/general/view';
 import { IExecutionResult } from '../utils/commandRunner/command';
+import { transientConfig } from '../extension';
 
 
 export async function magitDiscardAtPoint(repository: MagitRepository, currentView: DocumentView): Promise<any> {
+  if (transientConfig.ignoreWhitespaceInDiff) {
+    window.showInformationMessage("Can't discard when ignore-whitespace-in-diff is enabled");
+    return;
+  }
 
   const selection = window.activeTextEditor!.selection;
   // Warning, anything with relative referencing is dangerous here, e.g. stash@{1}:

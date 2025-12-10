@@ -5,6 +5,7 @@ import { TextView } from '../general/textView';
 import { MagitBranch } from '../../models/magitBranch';
 import { SemanticTextView, Token } from '../general/semanticTextView';
 import { SemanticTokenTypes } from '../../common/constants';
+import { transientConfig } from '../../extension';
 
 export class BranchHeaderSectionView extends View {
   isFoldable = true;
@@ -26,6 +27,10 @@ export class BranchHeaderSectionView extends View {
 
       if (HEAD.tag?.name) {
         this.addSubview(new SemanticTextView('Tag: '.padEnd(10), new Token(HEAD.tag.name!, SemanticTokenTypes.TagName)));
+      }
+
+      if (transientConfig.ignoreWhitespaceInDiff) {
+        this.addSubview(new TextView('Diff: '.padEnd(10) + '-w (ignoring whitespace)'));
       }
     } else {
       this.addSubview(new TextView('In the beginning there was darkness'));

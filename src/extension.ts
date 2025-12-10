@@ -4,7 +4,7 @@ import { GitExtension, API } from './typings/git';
 import { pushing } from './commands/pushingCommands';
 import { branching, showRefs } from './commands/branchingCommands';
 import { magitDispatch, magitHelp } from './commands/helpCommands';
-import { magitStatus, magitRefresh } from './commands/statusCommands';
+import { magitStatus, magitRefresh, toggleIgnoreWhitespaceInDiff } from './commands/statusCommands';
 import { magitVisitAtPoint } from './commands/visitAtPointCommands';
 import { MagitRepository } from './models/magitRepository';
 import { magitCommit, setCodePath } from './commands/commitCommands';
@@ -65,6 +65,7 @@ export const processLog: MagitProcessLogEntry[] = [];
 export let gitApi: API;
 export let logPath: string;
 export let magitConfig: { displayBufferSameColumn?: boolean, forgeEnabled?: boolean, hiddenStatusSections: Set<string>, quickSwitchEnabled?: boolean, gitPath?: string };
+export let transientConfig = { ignoreWhitespaceInDiff: false };
 
 function loadConfig() {
   let workspaceConfig = workspace.getConfiguration('magit');
@@ -133,6 +134,7 @@ export function activate(context: ExtensionContext) {
 
   context.subscriptions.push(
     commands.registerCommand('magit.status', magitStatus),
+    commands.registerTextEditorCommand('magit.toggle-ignore-whitespace-in-diff', toggleIgnoreWhitespaceInDiff),
     commands.registerTextEditorCommand('magit.help', CommandPrimer.primeRepo(magitHelp, false)),
     commands.registerTextEditorCommand('magit.dispatch', CommandPrimer.primeRepo(magitDispatch, false)),
 

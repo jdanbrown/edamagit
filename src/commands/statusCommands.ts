@@ -18,10 +18,21 @@ import { Stash } from '../models/stash';
 import { MagitRepository } from '../models/magitRepository';
 import ViewUtils from '../utils/viewUtils';
 import { scheduleForgeStatusAsync, forgeStatusCached } from '../forge';
+import { transientConfig } from '../extension';
 
 const maxCommitsAheadBehind = 50;
 
 export async function magitRefresh() { }
+
+export async function toggleIgnoreWhitespaceInDiff() {
+  const editor = window.activeTextEditor;
+  let repository = MagitUtils.getCurrentMagitRepoNO_STATUS(editor?.document.uri);
+
+  if (repository) {
+    transientConfig.ignoreWhitespaceInDiff = !transientConfig.ignoreWhitespaceInDiff;
+    await MagitUtils.magitStatusAndUpdate(repository);
+  }
+}
 
 export async function magitStatus(): Promise<any> {
 
@@ -108,19 +119,19 @@ export async function internalMagitStatus(repository: Repository): Promise<Magit
 
   const workingTreeChangesTasks = Promise.all(workingTreeChanges_NoUntracked
     .map(async change => {
-      const diff = await repository.diffWithHEAD(change.uri.fsPath);
+      const diff = await getDiff(repository, change.uri.fsPath, false);
       return toMagitChange(repository, change, diff);
     }));
 
   const indexChangesTasks = Promise.all(repository.state.indexChanges
     .map(async change => {
-      const diff = await repository.diffIndexWithHEAD(change.uri.fsPath);
+      const diff = await getDiff(repository, change.uri.fsPath, true);
       return toMagitChange(repository, change, diff);
     }));
 
   const mergeChangesTasks = Promise.all(repository.state.mergeChanges
     .map(async change => {
-      const diff = await repository.diffWithHEAD(change.uri.fsPath);
+      const diff = await getDiff(repository, change.uri.fsPath, false);
       return toMagitChange(repository, change, diff);
     }));
 
@@ -197,6 +208,23 @@ export async function internalMagitStatus(repository: Repository): Promise<Magit
     gitRepository: repository,
     forgeState: forgeState,
   };
+}
+
+async function getDiff(repository: Repository, filePath: string, cached: boolean): Promise<string> {
+  const args = ['diff'];
+
+  if (cached) {
+    args.push('--cached');
+  }
+
+  if (transientConfig.ignoreWhitespaceInDiff) {
+    args.push('-w');
+  }
+
+  args.push('--', filePath);
+
+  const result = await gitRun(repository, args, {}, LogLevel.None);
+  return result.stdout;
 }
 
 function toMagitChange(repository: Repository, change: Change, diff?: string): MagitChange {

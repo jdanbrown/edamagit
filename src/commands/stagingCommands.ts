@@ -14,6 +14,7 @@ import GitTextUtils from '../utils/gitTextUtils';
 import * as Constants from '../common/constants';
 import { View } from '../views/general/view';
 import ViewUtils from '../utils/viewUtils';
+import { transientConfig } from '../extension';
 
 export async function magitStage(repository: MagitRepository, currentView: DocumentView): Promise<any> {
 
@@ -25,6 +26,11 @@ export async function magitStage(repository: MagitRepository, currentView: Docum
 async function stage(repository: MagitRepository, selection: Selection, selectedView?: View): Promise<any> {
 
   if (selectedView instanceof HunkView) {
+    if (transientConfig.ignoreWhitespaceInDiff) {
+      window.showInformationMessage("Can't stage hunks when ignore-whitespace-in-diff is enabled");
+      return;
+    }
+
     let hunkView = selectedView as HunkView;
 
     if (hunkView.section !== Section.Staged) {
@@ -95,6 +101,11 @@ export async function magitUnstage(repository: MagitRepository, currentView: Doc
 async function unstage(repository: MagitRepository, selection: Selection, selectedView?: View): Promise<any> {
 
   if (selectedView instanceof HunkView) {
+    if (transientConfig.ignoreWhitespaceInDiff) {
+      window.showInformationMessage("Can't unstage hunks when ignore-whitespace-in-diff is enabled");
+      return;
+    }
+
     let hunkView = selectedView as HunkView;
 
     if (hunkView.section === Section.Staged) {
